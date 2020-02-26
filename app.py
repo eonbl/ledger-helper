@@ -14,7 +14,7 @@ def press(btn):
         app.go()
 
 
-app = appJar.gui()
+app = appJar.gui("Payout Calculator")
 app.addTextArea("input")
 app.setTextAreaWidth("input", 100)
 app.setTextAreaHeight("input", 10)
