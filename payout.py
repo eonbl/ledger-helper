@@ -54,12 +54,25 @@ def parse_input():
 
 
 def compute_payout(names, buy_ins, buy_outs):
-    # Line up all positive profits and negative profits and match them from largest to smallest
+    assert(len(names) == len(buy_ins) == len(buy_outs))
+
     positive = []
     negative = []
     payouts = []
+
+    # Distribute any unaccounted for money evenly among all players
+    balanced_buy_ins = list(buy_ins)
+    balanced_buy_outs = list(buy_outs)
+    extra = (sum(buy_ins) - sum(buy_outs)) / len(names)
+    for i in range(len(balanced_buy_outs)):
+        balanced_buy_outs[i] += extra
+
+    if abs(extra * len(names)) > 0.004:
+        print("NOTE: Missing profits/losses distributed evenly among players")
+
+    # Line up all positive profits and negative profits and match them from largest to smallest
     for i in range(len(names)):
-        profit = buy_outs[i] - buy_ins[i]
+        profit = balanced_buy_outs[i] - balanced_buy_ins[i]
         if profit > 0:
             positive.append([names[i], profit])
         elif profit < 0:
@@ -83,16 +96,6 @@ def compute_payout(names, buy_ins, buy_outs):
             payouts.append([negative[neg_idx][0], positive[pos_idx][0], negative[pos_idx][1]])
             pos_idx += 1
             neg_idx += 1
-
-    # Distribute any unaccounted for money evenly among all players
-    pos_remain = sum(map(operator.itemgetter(1), positive[pos_idx:]))
-    neg_remain = sum(map(operator.itemgetter(1), negative[neg_idx:]))
-    remain = pos_remain - neg_remain
-    remain_each = remain / len(names)
-    for payout in payouts:
-        payout[2] += remain_each
-    if abs(remain) > 0.004:
-        print("NOTE: Missing profits/losses distributed evenly among players")
 
     return payouts
 
