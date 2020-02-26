@@ -2,6 +2,8 @@ import re
 import sys
 import operator
 
+EPSILON = 0.004
+
 # Computes payout transactions to settle a ledger
 # Accepts input from console: "Name: (buy-in) -> buy-out" (with some room for error) and empty new line at the end
 
@@ -12,7 +14,6 @@ import operator
 #
 
 # parse_input can be modified to accept other formats
-
 
 def parse_lines(lines):
     names = []
@@ -33,9 +34,6 @@ def parse_lines(lines):
         else:
             print('Error in formatting: needs at least 2 numbers in each line')
             sys.exit()
-
-    if sum(buy_ins) != sum(buy_outs):
-        print('WARNING: sum of buy-ins do not match sum of buy-outs')
 
     return names, buy_ins, buy_outs
 
@@ -67,9 +65,6 @@ def compute_payout(names, buy_ins, buy_outs):
     for i in range(len(balanced_buy_outs)):
         balanced_buy_outs[i] += extra
 
-    if abs(extra * len(names)) > 0.004:
-        print("NOTE: Missing profits/losses distributed evenly among players")
-
     # Line up all positive profits and negative profits and match them from largest to smallest
     for i in range(len(names)):
         profit = balanced_buy_outs[i] - balanced_buy_ins[i]
@@ -93,7 +88,7 @@ def compute_payout(names, buy_ins, buy_outs):
             payouts.append([negative[neg_idx][0], positive[pos_idx][0], positive[pos_idx][1]])
             pos_idx += 1
         else:
-            payouts.append([negative[neg_idx][0], positive[pos_idx][0], negative[pos_idx][1]])
+            payouts.append([negative[neg_idx][0], positive[pos_idx][0], negative[neg_idx][1]])
             pos_idx += 1
             neg_idx += 1
 
@@ -107,6 +102,8 @@ def string_in_out(names, buy_ins, buy_outs):
             str += f'{names[i]}\t{int(buy_ins[i])}\t{buy_outs[i]:>6.2f}\t{buy_outs[i]-buy_ins[i]:>+8.2f}\n'
         str += f'Total\t{sum([int(b) for b in buy_ins])}\t{sum(buy_outs):>6.2f}' + \
                f'\t{sum([buy_outs[i]-buy_ins[i] for i in range(len(buy_outs))]):>+8.2f}\n'
+        if abs(sum(buy_ins) - sum(buy_outs)) > EPSILON:
+            str += '\nWARNING: Buy-ins and buy-outs do not match\n'
     else:
         str = 'Buy-ins and buy-outs do not match number of players\n'
 
@@ -124,5 +121,8 @@ if __name__ == '__main__':
     names, buy_ins, buy_outs = parse_input()
 
     print(string_in_out(names, buy_ins, buy_outs))
+
+    if abs(sum(buy_ins) - sum(buy_outs)) > EPSILON:
+        print("Missing profits/losses distributed evenly among players")
 
     print(string_payout(compute_payout(names, buy_ins, buy_outs)))
