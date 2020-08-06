@@ -52,6 +52,9 @@ def parse_input():
 
 
 def compute_payout(names, buy_ins, buy_outs):
+
+    #TODO: after each matching, re-order the largest owed and owed to instead of using second-most owed to pay the original most owed
+
     assert(len(names) == len(buy_ins) == len(buy_outs))
 
     positive = []
